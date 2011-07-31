@@ -1,0 +1,148 @@
+<?php
+
+class InputfieldFlickr extends InputfieldImage implements ConfigurableModule {
+
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Flickr',
+			'version' => 100,
+			'summary' => 'Adds possibility to search and choose images from Flickr',
+			'permanent' => false	, 
+			);
+	}
+
+	public function init() {
+		parent::init();
+		$this->set('nonCommercial', false); 
+	}
+	
+	static public function getDefaultData() {
+	   return array(
+		   'FlickrApiKey' => '',
+		   'nonCommercial' => 0
+		   );
+	}
+	
+	public function __construct() {
+	   foreach(self::getDefaultData() as $key => $value) {
+		   $this->$key = $value;
+	   }
+	}
+
+	public function ___render() {
+		$this->config->scripts->add($this->config->urls->InputfieldFile . "InputfieldFile.js");
+		$this->config->styles->add($this->config->urls->InputfieldFile . "InputfieldFile.css");
+		
+		// We want to allow local file uploads also
+		$out = parent::___render();
+		
+		if (strlen($this->FlickrApiKey) < 5) {
+			$out .= "<p>Please <a href='{$this->config->urls->admin}module/edit?name=InputfieldFlickr'>add your Flickr API key</a> to use this module</p>";
+			return $out;
+		}
+		
+		if(!$this->maxFiles || count($this->value) < $this->maxFiles) {
+			$attrs = $this->getAttributes();
+			
+			$out .= '<hr /><fieldset class="flickrImage" data-name="'.$this->getAttribute('name').'">';
+			$out .= '<label>Search from Flickr:</label>';
+			$out .= '<input type="text" class="flickrSearch" />';
+			$out .= '<button class="flickrButton ui-button ui-widget ui-corner-all ui-state-default"><span class="ui-button-text">Search</span></button>';
+			$out .= '<div class="flickrChosen"><h2>Chosen ones:</h2><p>Click image to cancel</p></div><div class="flickrResults"></div></fieldset>';
+		}
+		$out .= <<<OUT
+<script>
+	if (typeof FlickrInput == 'undefined') {
+		var FlickrInput = {	'APIKEY': '$this->FlickrApiKey',
+							'NONCOMMERCIAL': '$this->nonCommercial'
+							}
+		}
+</script>
+OUT;
+		
+		return $out;
+	}
+	
+	static public function getModuleConfigInputfields(array $data) {
+
+		// this is a container for fields, basically like a fieldset
+		$fields = new InputfieldWrapper();
+
+		// since this is a static function, we can't use $this->modules, so get them from the global wire() function
+		$modules = wire('modules');
+		
+		$data = array_merge(self::getDefaultData(), $data);
+		
+		// load jQuery field
+		$field = $modules->get("InputfieldText");
+		$field->name = "FlickrApiKey";
+		$field->label = "Flickr API key";
+		$field->value = $data['FlickrApiKey']; 
+		$field->description = "Using this module requires Flickr API key - you get it from Flickr website: http://www.flickr.com/services/apps/create/";
+		$fields->add($field);
+		
+		$field = $modules->get('InputfieldCheckbox'); 
+		$field->attr('name', 'nonCommercial'); 
+		$field->attr('value', 1); 
+		$field->attr('checked',  empty($data['nonCommercial']) ? '' : 'checked');
+		$field->label = 'Search images allowed for non-commercial use?'; 
+		$field->description = 'Only check if you use this only on non-commercial site (personal or nonprofit, no ads). Finds more photos but with stricter license.';
+		$fields->add($field); 
+
+		return $fields;
+	}
+	
+	public function ___processInput(WireInputData $input) {
+		foreach($input as $key => $url_array) {
+			if($key == $this->getAttribute('name') . '_flickr') {
+				foreach($url_array as $url) {
+					if (strlen($url) > 8) {
+						$this->value->add($url);
+						$this->message("Added new image: " . $url);
+					}
+				}
+				
+			}
+		}
+		
+		// CODE BELOW JUST CUT & PASTE FROM InputfieldFile.module - Do I need hook or how I get this nicer?
+		if(!$this->destinationPath || !is_dir($this->destinationPath)) return $this->error("Destination path is empty or does not exist"); 
+		if(!is_writable($this->destinationPath)) return $this->error("Destination path is not writable"); 
+
+		$changed = false; 
+
+		if(!$this->maxFiles || count($this->value) < $this->maxFiles) { 
+
+			$ul = new WireUpload($this->attr('name')); 
+			$ul->setDestinationPath($this->destinationPath); 
+			$ul->setOverwrite(false); 
+			if($this->maxFiles) $ul->setMaxFiles($this->maxFiles - count($this->value)); 
+
+			if($this->unzip) $ul->setExtractArchives(true); 
+
+			$ul->setValidExtensions(explode(' ', trim($this->extensions))); 
+
+			foreach($ul->execute() as $filename) {
+				$this->processInputAddFile($filename); 
+				$changed = true; 
+			}
+		}
+
+		$n = 0; 
+
+		foreach($this->value as $pagefile) {
+			if($this->processInputFile($input, $pagefile, $n)) { 
+				$changed = true; 
+			}
+			$n++; 
+		}
+
+		if($changed) {
+			$this->value->sort('sort'); 
+			$this->trackChange('value'); 
+		}
+
+		return $this;
+		
+	}
+}

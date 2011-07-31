@@ -1,0 +1,48 @@
+.flickrImage hr {
+	height: 1px;
+	background: #ccc;
+	border: none;
+}
+.flickrResults {
+	margin-right: 240px;
+	padding-left: 40px;
+	padding-top: 10px;
+}
+
+.flickrChosen {
+	float: right;
+	width: 210px;
+	background: #eee;
+	overflow: hidden;
+	padding: 10px;
+	display: none;
+}
+
+.flickrChosen h2 {
+	margin: 0;
+}
+
+div.fImage {
+	cursor: pointer;
+	float: left;
+	display: block;
+	overflow: hidden;
+	width: 210px;
+	height: 200px;
+	margin: 0 10px 10px 0;
+}
+
+.flickrSearch {
+	float: left;
+	padding: 2px;
+}
+
+.flickrButton {
+	margin-left: 5px !important;
+}
+
+.flickrLoading {
+	background: url(loading.gif) no-repeat top left;
+	min-height: 40px;
+	min-width: 40px;
+}
