@@ -65,7 +65,6 @@ $(document).ready(function() {
 						if (total == sizesFound) {
 							allReady();
 						}
-						console.log({'thumb': img_source, 'full': desired_source});
 						images[images_i].urls.thumb = img_source;
 						images[images_i].urls.full = desired_source;
 						if (images[images_i].desc.length > 1) {
@@ -96,13 +95,12 @@ $(document).ready(function() {
 				if($(this).data('added')) {
 					$(this).remove();
 					return false;
-				}
-				$chosen.show();
-				$(this).appendTo($chosen);
-				$(this).data('added', true);
-				$('<input type="hidden" name="'+field_name+'_flickr[]" value="'+ images[images_i].urls.full +'" />').appendTo($(this));
-				
-				})
+				};
+					$chosen.show();
+					$(this).appendTo($chosen);
+					$(this).data('added', true);
+					$('<input type="hidden" name="'+field_name+'_flickr[]" value="'+ images[images_i].urls.full +'" />').appendTo($(this));
+			})
 			.appendTo($results);
 			images[images_i].ready = true;
 		}
@@ -112,7 +110,6 @@ $(document).ready(function() {
 		if(descsFound == sizesFound) {
 			$results.removeClass('flickrLoading');
 			$button.removeClass('ui-state-active');
-			console.log(images);
 		}	
 	}
 	
@@ -149,10 +146,4 @@ $(document).ready(function() {
 		  });
 		});
 	};
-	
-	function bindImages($results){
-		$results.find('div').click(function(){alert("this");})
-	};
-	
-
 }); 
