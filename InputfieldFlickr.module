@@ -93,56 +93,16 @@ OUT;
 	}
 	
 	public function ___processInput(WireInputData $input) {
-		foreach($input as $key => $url_array) {
-			if($key == $this->getAttribute('name') . '_flickr') {
-				foreach($url_array as $url) {
-					if (strlen($url) > 8) {
-						$this->value->add($url);
-						$this->message("Added new image: " . $url);
-					}
-				}
-				
+		$fieldname = $this->getAttribute('name') . '_flickr';
+		foreach($input->$fieldname as $flickr_image) {
+			$img = explode(" ", $flickr_image, 2); // $image[0] is url, $image[1] is description
+			if (strlen($img[0]) > 8) {
+				$this->value->add($img[0]);
+				$image = $this->value->last();
+				$image->set('description', $img[1]);
+				$this->message("Added new image: " . $img[0]);
 			}
 		}
-		
-		// CODE BELOW JUST CUT & PASTE FROM InputfieldFile.module - Do I need hook or how I get this nicer?
-		if(!$this->destinationPath || !is_dir($this->destinationPath)) return $this->error("Destination path is empty or does not exist"); 
-		if(!is_writable($this->destinationPath)) return $this->error("Destination path is not writable"); 
-
-		$changed = false; 
-
-		if(!$this->maxFiles || count($this->value) < $this->maxFiles) { 
-
-			$ul = new WireUpload($this->attr('name')); 
-			$ul->setDestinationPath($this->destinationPath); 
-			$ul->setOverwrite(false); 
-			if($this->maxFiles) $ul->setMaxFiles($this->maxFiles - count($this->value)); 
-
-			if($this->unzip) $ul->setExtractArchives(true); 
-
-			$ul->setValidExtensions(explode(' ', trim($this->extensions))); 
-
-			foreach($ul->execute() as $filename) {
-				$this->processInputAddFile($filename); 
-				$changed = true; 
-			}
-		}
-
-		$n = 0; 
-
-		foreach($this->value as $pagefile) {
-			if($this->processInputFile($input, $pagefile, $n)) { 
-				$changed = true; 
-			}
-			$n++; 
-		}
-
-		if($changed) {
-			$this->value->sort('sort'); 
-			$this->trackChange('value'); 
-		}
-
-		return $this;
-		
+		return parent::___processInput($input);
 	}
 }

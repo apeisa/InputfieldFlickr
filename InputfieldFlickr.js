@@ -18,7 +18,9 @@ $(document).ready(function() {
 	
 	$('.flickrSearch').val($("#Inputfield_title").val());
 	
-	$('.flickrButton').live("click",function(){
+	$('.flickrButton').click(function(){
+		sizesFound = 0;
+		descsFound = 0;
 		$results = $(this).parent().find('.flickrResults');
 		$chosen = $(this).parent().find('.flickrChosen');
 		$results.html('');
@@ -36,6 +38,7 @@ $(document).ready(function() {
 		var orig_source = '';
 		var desired_source = '';
 		var backup_source = '';
+		
 		$.getJSON("http://api.flickr.com/services/rest/?method=flickr.photos.getSizes&jsoncallback=?",
 					  {
 						photo_id: id,
@@ -43,6 +46,7 @@ $(document).ready(function() {
 						api_key: FLICKRAPIKEY
 					  },
 					  function(data) {
+						sizesFound++;
 						$.each(data.sizes.size, function(i,size){
 							if(size.label == "Small") {
 								img_source = size.source;
@@ -61,34 +65,52 @@ $(document).ready(function() {
 						if (desired_source == '') { desired_source = backup_source; }
 						
 						
-						sizesFound++;
-						if (total == sizesFound) {
-							allReady();
-						}
+						
+						
 						images[images_i].urls.thumb = img_source;
 						images[images_i].urls.full = desired_source;
 						if (images[images_i].desc.length > 1) {
 							drawImage(images_i);
+						}
+						if (total == sizesFound) {
+							allReady();
 						}
 						return true;
 					});
 	}
 	
 	function getImageDesc(id, images_i) {
-		descsFound++;
-		if (total == descsFound) {
-			allReady();
-		}
-		images[images_i].desc = "kuvausteksti";
-		if (images[images_i].urls.thumb.length > 1) {
-			drawImage(images_i);
-		}
-		return true;
+		
+		$.getJSON("http://api.flickr.com/services/rest/?method=flickr.photos.getInfo&jsoncallback=?",
+					  {
+						photo_id: id,
+						format: "json",
+						api_key: FLICKRAPIKEY
+					  },
+					  function(data) {
+						descsFound++;
+						var author = '';
+						if (data.photo.owner.realname.length > 1) {
+							author = data.photo.owner.realname;
+						} else {
+							author = data.photo.owner.username;
+						}
+						images[images_i].desc = data.photo.title._content + " by " + author;
+						if (images[images_i].urls.thumb.length > 1) {
+							drawImage(images_i);
+						}
+						if (total == descsFound) {
+							allReady();
+						}
+						return true;
+					  });
+
+		
 	}
 	
 	function drawImage(images_i) {
 		if(!images[images_i].ready) {
-			$("<div class='fImage' style='background: url("+ images[images_i].urls.thumb +") no-repeat 50% 50%;'></div>")
+			$("<div class='fImage' style='background: url("+ images[images_i].urls.thumb +") no-repeat 50% 50%;'><p>"+ images[images_i].desc +"</p></div>")
 						
 			// User clicks flickr image - we need to create hidden inputfield, which contains url to fullsize image
 			.click(function(){
@@ -99,7 +121,7 @@ $(document).ready(function() {
 					$chosen.show();
 					$(this).appendTo($chosen);
 					$(this).data('added', true);
-					$('<input type="hidden" name="'+field_name+'_flickr[]" value="'+ images[images_i].urls.full +'" />').appendTo($(this));
+					$('<input type="hidden" name="'+field_name+'_flickr[]" value="'+ images[images_i].urls.full +' '+ images[images_i].desc +'" />').appendTo($(this));
 			})
 			.appendTo($results);
 			images[images_i].ready = true;
@@ -122,8 +144,8 @@ $(document).ready(function() {
 		// We pull initial search from Flickr API - this will return image id:s for us
 		$.getJSON("http://api.flickr.com/services/rest/?method=flickr.photos.search&jsoncallback=?",
 		{
-		  tags: tag,
-		  tagmode: "any",
+		  text: tag,
+		  tagmode: "all",
 		  format: "json",
 		  api_key: FLICKRAPIKEY,
 		  license: LICENSE

@@ -27,9 +27,26 @@ div.fImage {
 	float: left;
 	display: block;
 	overflow: hidden;
+	position: relative;
 	width: 210px;
 	height: 200px;
 	margin: 0 10px 10px 0;
+}
+
+div.fImage p {
+	display: none;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin: 0;
+	padding: 5px;
+	background: #444;
+	color: white;
+}
+
+div.fImage:hover p {
+	display: block;
 }
 
 .flickrSearch {
