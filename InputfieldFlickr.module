@@ -32,6 +32,8 @@ class InputfieldFlickr extends InputfieldImage implements ConfigurableModule {
 	public function ___render() {
 		$this->config->scripts->add($this->config->urls->InputfieldFile . "InputfieldFile.js");
 		$this->config->styles->add($this->config->urls->InputfieldFile . "InputfieldFile.css");
+		$this->config->scripts->add($this->config->urls->InputfieldImage . "InputfieldImage.js");
+		$this->config->styles->add($this->config->urls->InputfieldImage . "InputfieldImage.css");
 		
 		// We want to allow local file uploads also
 		$out = parent::___render();
