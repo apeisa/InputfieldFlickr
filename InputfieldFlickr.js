@@ -1,4 +1,5 @@
 $(document).ready(function() {
+	$("a.InputfieldFileLink").fancybox();
 	
 	var FLICKRAPIKEY = FlickrInput.APIKEY;
 	var IMAGESIZE = 'Large';
