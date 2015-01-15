@@ -39,7 +39,7 @@ $(document).ready(function() {
 		var desired_source = '';
 		var backup_source = '';
 		
-		$.getJSON("http://api.flickr.com/services/rest/?method=flickr.photos.getSizes&jsoncallback=?",
+		$.getJSON("https://api.flickr.com/services/rest/?method=flickr.photos.getSizes&jsoncallback=?",
 					  {
 						photo_id: id,
 						format: "json",
@@ -81,7 +81,7 @@ $(document).ready(function() {
 	
 	function getImageDesc(id, images_i) {
 		
-		$.getJSON("http://api.flickr.com/services/rest/?method=flickr.photos.getInfo&jsoncallback=?",
+		$.getJSON("https://api.flickr.com/services/rest/?method=flickr.photos.getInfo&jsoncallback=?",
 					  {
 						photo_id: id,
 						format: "json",
@@ -142,7 +142,7 @@ $(document).ready(function() {
 		descsFound = 0;
 		
 		// We pull initial search from Flickr API - this will return image id:s for us
-		$.getJSON("http://api.flickr.com/services/rest/?method=flickr.photos.search&jsoncallback=?",
+		$.getJSON("https://api.flickr.com/services/rest/?method=flickr.photos.search&jsoncallback=?",
 		{
 		  text: tag,
 		  tagmode: "all",
